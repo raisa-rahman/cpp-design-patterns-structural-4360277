@@ -1,9 +1,9 @@
 #include <iostream>
+#include <memory>  // Required for std::unique_ptr and std::make_unique
 using namespace std;
 
 class ITextShare { 
 public: 
- 
    virtual bool shareText(const string& text) = 0; 
    virtual ~ITextShare() = default;
 }; 
@@ -26,7 +26,7 @@ public:
 
 class EmailShareEncrypted : public EmailShare
 {
-   public:
+public:
    bool shareText(const string &text) override
    {
      cout << "EmailShareEncrypted::shareText() encrypting text..." << endl;
@@ -34,13 +34,13 @@ class EmailShareEncrypted : public EmailShare
      return EmailShare::shareText(encrypted);
    }
 
-   private:
+private:
    string xorEncrypt(const string &input)
    {
      char key = 64;
      string output = input;
 
-     for (int i = 0; i < input.size(); ++i)
+     for (size_t i = 0; i < input.size(); ++i)  // Use size_t for index
          output[i] = input[i] ^ key;
 
      return output;
@@ -49,7 +49,7 @@ class EmailShareEncrypted : public EmailShare
 
 class SMSShareEncrypted : public SMSShare
 {
-   public:
+public:
    bool shareText(const string &text) override
    {
      cout << "SMSShareEncrypted::shareText() encrypting text..." << endl;
@@ -57,45 +57,41 @@ class SMSShareEncrypted : public SMSShare
      return SMSShare::shareText(encrypted);
    }
 
-   private:
-   string xorEncrypt(const string input)
+private:
+   string xorEncrypt(const string &input)  // Changed to pass by const reference
    {
      char key = 64;
      string output = input;
 
-     for (int i = 0; i < input.size(); ++i)
+     for (size_t i = 0; i < input.size(); ++i)  // Use size_t for index
          output[i] = input[i] ^ key;
 
      return output;
    }
 };
 
-
 class EmailShareAutoExpiring: public EmailShare
 {
-    //...
+    // You can add the logic for auto-expiring email sharing here
 };
 
 class SMSShareAutoExpiring: public SMSShare
 {
-    //...
+    // You can add the logic for auto-expiring SMS sharing here
 };
-
-
 
 int main()
 {
-  // Create an array of pointers to CloudStorage objects.
-    const std::unique_ptr<ITextShare> sharingServices[]
+    // Create an array of unique pointers to ITextShare objects.
+    const std::unique_ptr<ITextShare> sharingServices[] =
     {
-        make_unique<EmailShare>(),
-        make_unique<SMSShare>(),
-        make_unique<EmailShareEncrypted>(),
-        make_unique<SMSShareEncrypted>()
+        std::make_unique<EmailShare>(),
+        std::make_unique<SMSShare>(),
+        std::make_unique<EmailShareEncrypted>(),
+        std::make_unique<SMSShareEncrypted>()
     };
 
-    // Iterate through the array and invoke the uploadContents and getFreeSpace
-    // methods on each object
+    // Share content using the services
     const string content = "Beam me up, Scotty!";
     for (const auto& service : sharingServices)
     {        
