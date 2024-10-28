@@ -10,7 +10,7 @@ public:
     virtual ~Component() = default;
 };
 
-class ConcreteComponentA: public Component
+class ConcreteComponentA : public Component
 {
 public:
     virtual void run() override
@@ -19,7 +19,7 @@ public:
     }
 };
 
-class ConcreteComponentB: public Component
+class ConcreteComponentB : public Component
 {
 public:
     virtual void run() override
@@ -28,29 +28,46 @@ public:
     }
 };
 
-// Incompatible class
+// Incompatible class (Legacy)
 class LegacyComponent
 {
 public:
     void go()
     {
         cout << "Executing LegacyComponent::go()" << endl;
-    }    
+    }
+};
+
+// Adapter class that makes LegacyComponent compatible with Component
+class LegacyComponentAdapter : public Component
+{
+private:
+    unique_ptr<LegacyComponent> legacyComponent;
+
+public:
+    LegacyComponentAdapter(unique_ptr<LegacyComponent> legacyComp)
+        : legacyComponent(move(legacyComp)) {}
+
+    virtual void run() override
+    {
+        legacyComponent->go(); // Call the incompatible method inside the adapter
+    }
 };
 
 int main()
-{    
+{
     const unique_ptr<Component> components[]
     {
         make_unique<ConcreteComponentA>(),
         make_unique<ConcreteComponentB>(),
-        // The next line will trigger a compiler error (no viable conversion from 'unique_ptr<LegacyComponent>' to 'const unique_ptr<Component>')
-        make_unique<LegacyComponent>() 
+        // Use the adapter to wrap LegacyComponent
+        make_unique<LegacyComponentAdapter>(make_unique<LegacyComponent>())
     };
-    
+
     for (const auto& component : components)
     {
         component->run();
     }
+
     return 0;
 }
