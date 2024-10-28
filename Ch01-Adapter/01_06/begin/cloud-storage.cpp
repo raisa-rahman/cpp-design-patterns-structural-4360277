@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <memory>
-#include <ctime>
+#include <random>
 
 using namespace std;
 
@@ -19,14 +19,17 @@ public:
     bool uploadContents(const string& content) override
     {
         cout << "Uploading " << content.length() << " bytes to CloudDrive: " << endl;
-
         return true;
     }
 
     int getFreeSpace() override
     {
-        // Implement the logic for getting the free space on CloudDrive here.
-        const int size = arc4random_uniform(20);
+        // Generate a random number for free space (0-20 GB)
+        static random_device rd; // Obtain a random number from hardware
+        static mt19937 eng(rd()); // Seed the generator
+        uniform_int_distribution<> distr(0, 20); // Define the range
+
+        const int size = distr(eng);
         cout << "Available CloudDrive storage: " << size << "GB" << endl;
         return size;
     }
@@ -43,7 +46,12 @@ public:
 
     int getFreeSpace() override
     {
-        const int size = arc4random_uniform(10);
+        // Generate a random number for free space (0-10 GB)
+        static random_device rd; // Obtain a random number from hardware
+        static mt19937 eng(rd()); // Seed the generator
+        uniform_int_distribution<> distr(0, 10); // Define the range
+
+        const int size = distr(eng);
         cout << "Available FastShare storage: " << size << "GB" << endl;
         return size;
     }
@@ -60,22 +68,24 @@ public:
     }
     int usedSpace()
     {
-        return arc4random_uniform(10);
+        // Generate a random number for used space (0-10 GB)
+        static random_device rd;
+        static mt19937 eng(rd());
+        uniform_int_distribution<> distr(0, 10);
+
+        return distr(eng);
     }
     const int totalSpace = 15;
 };
 
 int main()
 {
-    // Create an array of pointers to CloudStorage objects.
-    const std::unique_ptr<CloudStorage> cloudServices[]
-    {
-        std::make_unique<CloudDrive>(),
-        std::make_unique<FastShare>(),
-    };
+    // Use a vector to store unique_ptr to CloudStorage objects
+    vector<unique_ptr<CloudStorage>> cloudServices;
+    cloudServices.push_back(make_unique<CloudDrive>());
+    cloudServices.push_back(make_unique<FastShare>());
 
-    // Iterate through the array and invoke the uploadContents and getFreeSpace
-    // methods on each object.
+    // Iterate through the vector and invoke the uploadContents and getFreeSpace methods on each object.
     const string content = "Beam me up, Scotty!";
     for (const auto &service : cloudServices)
     {        
