@@ -1,5 +1,5 @@
 #include <iostream>
-#include <memory>
+#include <memory>  // Include this header for std::unique_ptr
 
 using namespace std;
 
@@ -10,7 +10,7 @@ public:
     virtual ~Component() = default;
 };
 
-class ConcreteComponentA: public Component
+class ConcreteComponentA : public Component
 {
 public:
     virtual void run() override
@@ -19,7 +19,7 @@ public:
     }
 };
 
-class ConcreteComponentB: public Component
+class ConcreteComponentB : public Component
 {
 public:
     virtual void run() override
@@ -35,30 +35,31 @@ public:
     void go()
     {
         cout << "Executing LegacyComponent::go()" << endl;
-    }    
+    }
 };
 
-
-class LegacyClassAdapter: public Component, private LegacyComponent
+// Class Adapter
+class LegacyClassAdapter : public Component, private LegacyComponent
 {
 public:
-    virtual void run() override
+    void run() override
     {
-        cout << "LegacyClassAdapter::run() -> calling LegacyComponent::go()" << endl;
+        // Delegate the request to the Adaptee
+        cout << "LegacyClassAdapter::run() -> Calling LegacyComponent::go()" << endl;
         go();
     }
 };
 
-
 int main()
-{    
-    const unique_ptr<Component> components[]
+{
+    // Correct the usage of std::unique_ptr
+    const unique_ptr<Component> components[] =
     {
         make_unique<ConcreteComponentA>(),
         make_unique<ConcreteComponentB>(),
-        make_unique<LegacyClassAdapter>()        
+        make_unique<LegacyClassAdapter>()
     };
-    
+
     for (const auto& component : components)
     {
         component->run();
