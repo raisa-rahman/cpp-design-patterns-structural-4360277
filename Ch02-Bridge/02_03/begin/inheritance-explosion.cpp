@@ -1,9 +1,9 @@
 #include <iostream>
+#include <memory> // Include for smart pointers
 using namespace std;
 
 class ITextShare { 
 public: 
- 
    virtual bool shareText(const string& text) = 0; 
    virtual ~ITextShare() = default;
 }; 
@@ -24,81 +24,68 @@ public:
    } 
 };
 
-class EmailShareEncrypted : public EmailShare
-{
-   public:
-   bool shareText(const string &text) override
-   {
+class EmailShareEncrypted : public EmailShare {
+public:
+   bool shareText(const string &text) override {
      cout << "EmailShareEncrypted::shareText() encrypting text..." << endl;
      string encrypted = xorEncrypt(text);     
      return EmailShare::shareText(encrypted);
    }
 
-   private:
-   string xorEncrypt(const string &input)
-   {
+private:
+   string xorEncrypt(const string &input) {
      char key = 64;
      string output = input;
 
-     for (int i = 0; i < input.size(); ++i)
+     for (size_t i = 0; i < input.size(); ++i) {
          output[i] = input[i] ^ key;
+     }
 
      return output;
    }
 };
 
-class SMSShareEncrypted : public SMSShare
-{
-   public:
-   bool shareText(const string &text) override
-   {
+class SMSShareEncrypted : public SMSShare {
+public:
+   bool shareText(const string &text) override {
      cout << "SMSShareEncrypted::shareText() encrypting text..." << endl;
      string encrypted = xorEncrypt(text);     
      return SMSShare::shareText(encrypted);
    }
 
-   private:
-   string xorEncrypt(const string input)
-   {
+private:
+   string xorEncrypt(const string &input) { // Changed to const reference
      char key = 64;
      string output = input;
 
-     for (int i = 0; i < input.size(); ++i)
+     for (size_t i = 0; i < input.size(); ++i) {
          output[i] = input[i] ^ key;
+     }
 
      return output;
    }
 };
 
-
-class EmailShareAutoExpiring: public EmailShare
-{
-    //...
+// Placeholders for additional classes
+class EmailShareAutoExpiring: public EmailShare {
+    // Future implementation for auto-expiring feature...
 };
 
-class SMSShareAutoExpiring: public SMSShare
-{
-    //...
+class SMSShareAutoExpiring: public SMSShare {
+    // Future implementation for auto-expiring feature...
 };
 
-
-
-int main()
-{
-  // Create an array of pointers to CloudStorage objects.
-    const std::unique_ptr<ITextShare> sharingServices[]
-    {
+int main() {
+    // Create an array of pointers to ITextShare objects using smart pointers
+    const unique_ptr<ITextShare> sharingServices[] = {
         make_unique<EmailShare>(),
         make_unique<SMSShare>(),
         make_unique<EmailShareEncrypted>(),
         make_unique<SMSShareEncrypted>()
     };
 
-    // Iterate through the array and invoke the uploadContents and getFreeSpace
-    // methods on each object
     const string content = "Beam me up, Scotty!";
-    for (const auto& service : sharingServices)
-    {        
+    for (const auto& service : sharingServices) {        
         service->shareText(content);
         cout << endl;
     }
